@@ -6,22 +6,47 @@ services:
     ports:
       - "6379:6379"
     deploy:
-      replicas: 2
-    restart_policy:
-      condition: on-failure
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     networks:
       - backend
 
   vote:
-    build: ./vote
+    image: yoannchh/3dokr-vote:latest
     ports:
       - "5001:5000"
     depends_on:
       - redis
     deploy:
-      replicas: 2
-    restart_policy:
-      condition: on-failure
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+    networks:
+      - frontend
+      - backend
+  worker:
+    image: yoannchh/3dokr-worker:latest
+    depends_on:
+      - redis
+      - postgres
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
+  result:
+    image: yoannchh/3dokr-result:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     networks:
       - frontend
       - backend
@@ -35,39 +60,14 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     deploy:
-      replicas: 2
-    restart_policy:
-      condition: on-failure
+      replicas: 3
+      restart_policy:
+        condition: on-failure
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
 
-  worker:
-    build: ./worker
-    depends_on:
-      - redis
-      - postgres
-    deploy:
-      replicas: 2
-    restart_policy:
-      condition: on-failure
-    networks:
-      - backend
-
-  result:
-    build: ./result
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-    deploy:
-      replicas: 2 
-    restart_policy:
-      condition: on-failure
-    networks:
-      - frontend
-      - backend
 
 volumes:
   postgres_data:
