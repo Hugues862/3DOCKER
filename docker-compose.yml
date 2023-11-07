@@ -6,6 +6,8 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    networks:
+        - backend
 
   vote:
     build: ./vote
@@ -14,6 +16,9 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+    networks:
+      - frontend
+      - backend
 
   postgres:
     image: postgres
@@ -26,6 +31,8 @@ services:
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
 
   worker:
     build: ./worker
@@ -33,6 +40,8 @@ services:
       - redis
       - postgres
     restart: unless-stopped
+    networks:
+      - backend
 
   result:
     build: ./result
@@ -41,6 +50,16 @@ services:
     depends_on:
       - postgres
     restart: unless-stopped
+    networks:
+      - frontend
+      - backend
 
 volumes:
   postgres_data:
+
+
+networks:
+  frontend:  # Create a custom overlay network for frontend services (vote and result)
+  backend:   # Create a custom overlay network for backend services (redis, postgres, worker)
+
+
