@@ -99,8 +99,8 @@ volumes:
 
 networks:
   frontend:
-    driver: overlay  # Create a custom overlay network for frontend services (vote and result)
+    driver: overlay  
   backend:
-    driver: overlay   # Create a custom overlay network for backend services (redis, postgres, worker)
+    driver: overlay  
 
 
