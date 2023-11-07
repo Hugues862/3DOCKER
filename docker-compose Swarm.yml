@@ -81,7 +81,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     deploy:
-      replicas: 3
+      replicas: 1
       restart_policy:
         condition: on-failure
     volumes:
@@ -94,12 +94,13 @@ services:
       timeout: 5s
       retries: 3
     
-
-
 volumes:
   postgres_data:
 
 networks:
-  frontend:  # Create a custom overlay network for frontend services (vote and result)
-  backend:   # Create a custom overlay network for backend services (redis, postgres, worker)
+  frontend:
+    driver: overlay  # Create a custom overlay network for frontend services (vote and result)
+  backend:
+    driver: overlay   # Create a custom overlay network for backend services (redis, postgres, worker)
+
 
