@@ -11,6 +11,11 @@ services:
         condition: on-failure
     networks:
       - backend
+    healthcheck: # On verifie que le service est bien up
+      test: ["CMD", "redis-cli", "ping"] 
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   vote:
     image: yoannchh/3dokr-vote:latest
@@ -25,6 +30,12 @@ services:
     networks:
       - frontend
       - backend
+    healthcheck: # On fait une requete sur le service pour verifier qu'il est up
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
   worker:
     image: yoannchh/3dokr-worker:latest
     depends_on:
@@ -36,6 +47,11 @@ services:
         condition: on-failure
     networks:
       - backend
+    healthcheck: # On verifie que le process n'a pas crash.
+      test: ["CMD-SHELL", "pidof dotnet || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   result:
     image: yoannchh/3dokr-result:latest
@@ -50,6 +66,11 @@ services:
     networks:
       - frontend
       - backend
+    healthcheck: # On fait une requete sur le service pour verifier qu'il est up
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   postgres:
     image: postgres
@@ -67,6 +88,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
+    healthcheck: # On verifie que le service est bien up et ready pour read/write
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    
 
 
 volumes:

@@ -7,7 +7,12 @@ services:
       - "6379:6379"
     restart: unless-stopped
     networks:
-        - backend
+      - backend
+    healthcheck: # On verifie que le service est bien up
+      test: ["CMD", "redis-cli", "ping"] 
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   vote:
     build: ./vote
@@ -15,10 +20,15 @@ services:
       - "5001:5000"
     depends_on:
       - redis
-    restart: unless-stopped
+    restart: always
     networks:
       - frontend
       - backend
+    healthcheck: # On fait une requete sur le service pour verifier qu'il est up
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   postgres:
     image: postgres
@@ -33,6 +43,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
+    healthcheck: # On verifie que le service est bien up et ready pour read/write
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   worker:
     build: ./worker
@@ -42,6 +57,11 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    healthcheck: # On verifie que le process n'a pas crash.
+      test: ["CMD-SHELL", "pidof dotnet || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   result:
     build: ./result
@@ -53,13 +73,15 @@ services:
     networks:
       - frontend
       - backend
+    healthcheck: # On fait une requete sur le service pour verifier qu'il est up
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgres_data:
 
-
 networks:
-  frontend:  # Create a custom overlay network for frontend services (vote and result)
-  backend:   # Create a custom overlay network for backend services (redis, postgres, worker)
-
-
+  frontend:
+  backend:
